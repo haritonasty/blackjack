@@ -20,7 +20,7 @@ module.exports.Game = class Game {
             if (!user.pass) {
                 console.log(`${user.name} is playing now: [pass/pull]`);
                 let action = await readLine();
-                // let action = "pull";
+                // let action = "pass";
 
                 switch (action) {
                     case "pass":
@@ -30,25 +30,41 @@ module.exports.Game = class Game {
                         Game.pull(user);
                         break;
                     default:
-                        console.log("Action is invalid");
+                        console.log("Action is invalid. Try again!");
                         currUser--;
                         break;
                 }
             }
 
             numberActiveUsers = this.users.reduce((total, user) => total + !user.pass, 0);
+            if (numberActiveUsers === 0) break;
             currUser++;
             if (currUser === maxUser) {
-                // console.log("-/-/inc-/-/");
                 currUser = 0;
             }
         }
 
+        await this.results();
+    }
+
+    async results() {
         let maxScores = this.users.reduce((total, user) => user.scores > total && user.scores <= 21 ? user.scores : total, 0);
-        let winner = this.users.find(user => user.scores === maxScores);
-        console.log(`Winner is ${winner.name}`);
-        await appendFileAsync('log.txt', `Winner is ${winner.name}`);
-        winner.wins++;
+        let winners = this.users.filter(user => user.scores === maxScores);
+        if (winners.length === 1) {
+            console.log(`Winner is ${winners[0].name}`);
+            await appendFileAsync('log.txt', `Winner is ${winners[0].name}\n`);
+        }
+        else if (winners.length > 1 && winners[0].scores !== 0) {
+            console.log(`/-/-/-/- Winners are: /-/-/-\n`);
+            await appendFileAsync('log.txt', `Winners are:\n`);
+            winners.forEach(async winner => {
+                console.log(`${winner.name}\n`);
+                await appendFileAsync('log.txt', `${winner.name}\n`);
+            });
+        } else {
+            console.log(' /-/-/-/ dead heat /-/-/-/-\n');
+            await appendFileAsync('log.txt', `dead heat\n`);
+        }
     }
 
     reset() {
@@ -59,13 +75,15 @@ module.exports.Game = class Game {
         user.pass = true;
     }
 
-    static pull(user) {
+    static async pull(user) {
         user.scores += getCard().value;
         if (user.scores > 21) {
-            console.log(`${user.name} scored more than 21 and out of the game!`);
+            console.log(`${user.name} scored more than 21 and out of the game!\n`);
+            await appendFileAsync('log.txt', `${user.name} scored more than 21 and out of the game!\n`);
             this.pass(user);
         } else {
-            console.log(`${user.name} scores: ${user.scores}`);
+            console.log(`${user.name} scores: ${user.scores}\n`);
+            await appendFileAsync('log.txt', `${user.name} scores: ${user.scores}\n`);
         }
     }
 };

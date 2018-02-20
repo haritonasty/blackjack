@@ -1,9 +1,8 @@
 const minimist = require('minimist');
-const fs = require('fs');
 const util = require('./util');
-const readLine = require('./util').readLine;
 const User = require('./User');
 const Game = require("./Game").Game;
+const appendFileAsync = require("./util").appendFileAsync;
 
 const params = minimist(process.argv.slice(2), {
     alias: {
@@ -23,15 +22,14 @@ const params = minimist(process.argv.slice(2), {
 
 async function main() {
     if (!util.checkParams(params)) {
-        console.log("Params are not valid");
+        console.error("Params are not valid");
         console.log("For example: node app.js --users 2 --games 10");
         return;
     }
 
     console.log("Welcome to BlackJack");
     console.log(`Amount of users: ${params.users}`);
-    console.log(`Amount of games: ${params.games}`);
-    console.log();
+    console.log(`Amount of games: ${params.games}\n`);
 
     let users = [];
     for (let i = 0; i < params.users; i++) {
@@ -39,7 +37,8 @@ async function main() {
     }
 
     for (let i = 0; i < params.games; i++) {
-        console.log(`Number of game: ${i + 1}`);
+        console.log(`/-/-/-/- Game № ${i + 1} /-/-/-/-\n`);
+        await appendFileAsync('log.txt', `Game № ${i + 1}\n`);
         let game = new Game(users);
         await game.start();
     }
@@ -49,6 +48,6 @@ async function main() {
 main().then(() => {
     console.log("Good bye");
 }).catch(err => {
-    console.error("Something went wrong!!!");
+    console.error("Something went wrong!");
     console.error(err);
 });
