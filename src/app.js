@@ -11,8 +11,7 @@ const params = minimist(process.argv.slice(2), {
         'games': 'g'
     },
     default: {
-        games: 5,
-        users: 2
+        'help': false
     },
     unknown: (arg) => {
         console.error('Unknown option: ', arg);
@@ -23,11 +22,11 @@ const params = minimist(process.argv.slice(2), {
 async function main() {
     if (!util.checkParams(params)) {
         console.error("Params are not valid");
-        console.log("For example: node app.js --users 2 --games 10");
+        console.error("For example: node app.js --users 2 --games 10");
         return;
     }
 
-    console.log("Welcome to BlackJack");
+    console.log("Welcome to BlackJack!");
     console.log(`Amount of users: ${params.users}`);
     console.log(`Amount of games: ${params.games}\n`);
 
@@ -45,9 +44,16 @@ async function main() {
 
 }
 
-main().then(() => {
-    console.log("Good bye");
-}).catch(err => {
-    console.error("Something went wrong!");
-    console.error(err);
-});
+if (params.help) {
+    console.log(`Welcome to BlackJack!\n Commands:\n   --users: Number. How many players will be play\n   --games: Number. How many games will be play\n`);
+    process.exit(0);
+} else {
+    main().then(() => {
+        console.log("Good bye");
+        process.exit(0);
+    }).catch(err => {
+        console.error("Something went wrong!");
+        console.error(err);
+        process.exit(0);
+    });
+}
